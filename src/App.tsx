@@ -5,13 +5,23 @@ import Management from './pages/Management'
 import StoreSales from './pages/StoreSales'
 import Payroll from './pages/Payroll'
 import DebtTracker from './pages/DebtTracker'
+import { migrateLocalToSupabase } from './migrateLocalToSupabase'
 
-function Settings({ handleExportAll, handleImportAll, fileInputRef, backupInfo }: any) {
+function Settings({ handleExportAll, handleImportAll, fileInputRef, backupInfo, setBackupInfo }: any) {
   return (
     <section className="card" style={{ maxWidth: 480, margin: '40px auto' }}>
       <h2>Settings</h2>
       <button onClick={handleExportAll} style={{width:'100%', marginBottom:12, background:'#333', color:'#fff', border:'none', borderRadius:4, padding:'12px 0', cursor:'pointer'}}>Export All Data</button>
       <button onClick={()=>fileInputRef.current?.click()} style={{width:'100%', background:'#333', color:'#fff', border:'none', borderRadius:4, padding:'12px 0', cursor:'pointer'}}>Import All Data</button>
+      <button onClick={async()=>{
+        setBackupInfo('Syncing to Supabase...');
+        try {
+          await migrateLocalToSupabase();
+          setBackupInfo('Sync to Supabase complete!');
+        } catch (err) {
+          setBackupInfo('Sync to Supabase failed.');
+        }
+      }} style={{width:'100%', background:'#0070f3', color:'#fff', border:'none', borderRadius:4, padding:'12px 0', cursor:'pointer', marginTop:12}}>Sync Local Data to Supabase</button>
       <input type="file" accept="application/json" style={{display:'none'}} ref={fileInputRef} onChange={handleImportAll} />
       {backupInfo && <div style={{color:'#888', fontSize:14, marginTop:8}}>{backupInfo}</div>}
     </section>
@@ -248,7 +258,13 @@ export default function App() {
         />
       )}
       {view === 'settings' && (
-        <Settings handleExportAll={handleExportAll} handleImportAll={handleImportAll} fileInputRef={fileInputRef} backupInfo={backupInfo} />
+        <Settings
+          handleExportAll={handleExportAll}
+          handleImportAll={handleImportAll}
+          fileInputRef={fileInputRef}
+          backupInfo={backupInfo}
+          setBackupInfo={setBackupInfo}
+        />
       )}
 
       {view==='cheques' && (
